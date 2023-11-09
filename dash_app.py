@@ -7,21 +7,27 @@ from dash import Dash, html, dcc, Input, Output
 # Create a Dash application
 app = Dash(__name__)
 
-# Read data from an Excel file
-mil_pay_df = pd.read_excel('mil_pay.xlsx')
-
-# Calculate the last valid index of 'Military Pay' column
-last_year_active = mil_pay_df['Military Pay'].last_valid_index()
+# Read data from an Excel file for both sheets
+active_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ActiveRetire')
+reserve_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ReserveRetire')
 
 # Define the number of years to consider for post-military retirement pay
-years, n = mil_pay_df['Calendar Year'], 20
+years = active_retire_df['Calendar Year']
+n = 20
 
 # Initialize a new column 'Post Mil Retirement Pay' with zeros
-mil_pay_df['Post Mil Retirement Pay'] = [0] * len(years)
+active_retire_df['Post Mil Retirement Pay'] = [0] * len(years)
+reserve_retire_df['Post Mil Retirement Pay'] = [0] * len(years)
 
-# Set a fixed value of 123,000 for post-military retirement pay for a certain range of years
+# Calculate the last valid index of 'Military Pay' column for both sheets
+last_year_active = active_retire_df['Military Pay'].last_valid_index()
+last_year_reserve = reserve_retire_df['Military Pay'].last_valid_index()
+
+# Set a fixed value of 123,000 for post-military retirement pay for a certain range of years for both sheets
 if last_year_active is not None:
-    mil_pay_df.loc[last_year_active + 1:last_year_active + n, 'Post Mil Retirement Pay'] = 123000
+    active_retire_df.loc[last_year_active + 1:last_year_active + n, 'Post Mil Retirement Pay'] = 123000
+if last_year_reserve is not None:
+    reserve_retire_df.loc[last_year_reserve + 1:last_year_reserve + n, 'Post Mil Retirement Pay'] = 123000
 
 # Define the columns to be included in the visualization
 selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
@@ -30,38 +36,60 @@ selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service 
 app.layout = html.Div([
     html.H1("Military Pay Data Visualization"),
     
-    # Create a Graph component with an ID
-    dcc.Graph(id='military-pay-graph'),
+    # Create two Graph components with IDs
+    dcc.Graph(id='active_retire_graph'),
+    dcc.Graph(id='reserve_retire_graph'),
     
-    # Dummy input element that doesn't affect the layout
-    dcc.Input(id='dummy-input', style={'display': 'none'}, value='')
+    # Dummy input elements that don't affect the layout
+    dcc.Input(id='dummy_input_1', style={'display': 'none'}, value=''),
+    dcc.Input(id='dummy_input_2', style={'display': 'none'}, value='')
 ])
 
-# Create a callback function to update the graph
+# Create callback functions to update the graphs for ActiveRetire and ReserveRetire sheets
 @app.callback(
-    Output('military-pay-graph', 'figure'),
-    [Input('dummy-input', 'value')]
+    Output('active_retire_graph', 'figure'),
+    [Input('dummy_input_1', 'value')]
 )
-def update_graph(value):
-    # Initialize an empty list to store the data traces for the graph
+def update_active_retire_graph(value):
     data = []
 
-    # Create a bar trace for each selected column
     for column in selected_columns:
         trace = go.Bar(
-            x=mil_pay_df['Calendar Year'],
-            y=mil_pay_df[column],
+            x=years,
+            y=active_retire_df[column],
             name=column
         )
         data.append(trace)
 
-    # Define the layout for the graph
     layout = go.Layout(
-        barmode='stack',  # Stack bars on top of each other
-        title='Military Pay Data'  # Set the title for the graph
+        barmode='stack',
+        title='Active Retirement Graph'
     )
 
-    # Create a figure with the data and layout
+    fig = go.Figure(data=data, layout=layout)
+    
+    return fig
+
+@app.callback(
+    Output('reserve_retire_graph', 'figure'),
+    [Input('dummy_input_2', 'value')]
+)
+def update_reserve_retire_graph(value):
+    data = []
+
+    for column in selected_columns:
+        trace = go.Bar(
+            x=years,
+            y=reserve_retire_df[column],
+            name=column
+        )
+        data.append(trace)
+
+    layout = go.Layout(
+        barmode='stack',
+        title='Reserve Retirement Graph'
+    )
+
     fig = go.Figure(data=data, layout=layout)
     
     return fig
