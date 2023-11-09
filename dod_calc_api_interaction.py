@@ -1,16 +1,4 @@
-import pandas as pd
-import plotly.express as px
-import requests
-
-mil_pay_df = pd.read_excel('mil_pay.xlsx')
-stop_index = mil_pay_df['Military Pay'].last_valid_index()
-years, n = mil_pay_df['Calendar Year'], 20
-mil_pay_df['Post Mil Retirement Pay'] = [0] * len(years)
-if stop_index is not None: mil_pay_df.loc[stop_index + 1:stop_index + n, 'Post Mil Retirement Pay'] = 123000
-selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
-
-fig = px.bar(mil_pay_df, x='Calendar Year', y=selected_columns, title='Mil Pay', barmode='stack')
-#fig.show()
+import requests 
 
 base_pay_uri = 'https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBasicPay/0/O-1'
 headers = {"User-Agent": "python/3.11"}
@@ -29,3 +17,4 @@ except requests.exceptions.RequestException as e:
 # BAH URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBAH/1/O-1/32508
 # tax rate URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateTaxRate/single/29796  
 # BAS URI: https://www.dfas.mil/MilitaryMembers/payentitlements/Pay-Tables/bas/ 
+
