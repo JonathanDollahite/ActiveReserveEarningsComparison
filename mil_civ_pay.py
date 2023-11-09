@@ -12,7 +12,6 @@ selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service 
 fig = px.bar(mil_pay_df, x='Calendar Year', y=selected_columns, title='Mil Pay', barmode='stack')
 #fig.show()
 
-# Replace 'your_uri_here' with the actual URI you want to request.
 base_pay_uri = 'https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBasicPay/0/O-1'
 headers = {"User-Agent": "python/3.11"}
 
@@ -28,5 +27,5 @@ except requests.exceptions.RequestException as e:
 
 # base pay URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBasicPay/0/O-1
 # BAH URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBAH/1/O-1/32508
-# tax rate: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateTaxRate/single/29796  
+# tax rate URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateTaxRate/single/29796  
 # BAS URI: https://www.dfas.mil/MilitaryMembers/payentitlements/Pay-Tables/bas/ 
