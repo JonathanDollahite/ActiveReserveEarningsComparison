@@ -17,4 +17,6 @@ except requests.exceptions.RequestException as e:
 # BAH URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBAH/1/O-1/32508
 # tax rate URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateTaxRate/single/29796  
 # BAS URI: https://www.dfas.mil/MilitaryMembers/payentitlements/Pay-Tables/bas/ 
+# continuation pay URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/GetConfigurationSettings/2
+# pay table growth rate and career progression URI: https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/GetMilitaryPayCalculatorSettings/2
 
