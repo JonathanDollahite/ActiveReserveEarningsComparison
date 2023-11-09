@@ -14,9 +14,10 @@ fig = px.bar(mil_pay_df, x='Calendar Year', y=selected_columns, title='Mil Pay',
 
 # Replace 'your_uri_here' with the actual URI you want to request.
 base_pay_uri = 'https://myarmybenefits.us.army.mil/DoD-Calculator-API/calculator/CalculateBasicPay/0/O-1'
+headers = {"User-Agent": "python/3.11"}
 
 try:
-    response = requests.get(base_pay_uri)
+    response = requests.get(base_pay_uri, headers=headers)
     if response.status_code == 200:
         base_pay = response.text
         print(f'Value stored as base_pay: {base_pay}')
