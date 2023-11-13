@@ -1,6 +1,5 @@
 # Import necessary libraries
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, html, dcc, Input, Output
 
@@ -11,51 +10,89 @@ app = Dash(__name__)
 active_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ActiveRetire')
 reserve_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ReserveRetire')
 
-# Define the number of years to consider for post-military retirement pay
-years = active_retire_df['Calendar Year']
-n = 20
+# Active retirement graph initial values
+active_retire_default_start_year = active_retire_df['Military Pay'].diff().idxmin() if active_retire_df['Military Pay'].diff().idxmin() is not None else active_retire_df['Military Pay'].last_valid_index() + 1
+active_retire_default_amount = active_retire_df['Military Pay'].max() if active_retire_df['Military Pay'].max() is not None else 80000
+active_retire_default_end_year = active_retire_df['Gov\'t TSP Payout'].first_valid_index() - 1
+
+# Reserve retirement graph initial values
+reserve_retire_default_start_year = reserve_retire_df['Military Pay'].diff().idxmin() if reserve_retire_df['Military Pay'].diff().idxmin() is not None else reserve_retire_df['Military Pay'].last_valid_index() + 1
+reserve_retire_default_amount = reserve_retire_df['Military Pay'].max() if reserve_retire_df['Military Pay'].max() is not None else 80000
+reserve_retire_default_end_year = reserve_retire_df['Gov\'t TSP Payout'].first_valid_index() - 1
 
 # Initialize a new column 'Post Mil Retirement Pay' with zeros
-active_retire_df['Post Mil Retirement Pay'] = [0] * len(years)
-reserve_retire_df['Post Mil Retirement Pay'] = [0] * len(years)
-
-# Calculate the last valid index of 'Military Pay' column for both sheets
-last_year_active = active_retire_df['Military Pay'].last_valid_index()
-last_year_reserve = reserve_retire_df['Military Pay'].last_valid_index()
-
-# Set a fixed value of 123,000 for post-military retirement pay for a certain range of years for both sheets
-if last_year_active is not None:
-    active_retire_df.loc[last_year_active + 1:last_year_active + n, 'Post Mil Retirement Pay'] = 123000
-if last_year_reserve is not None:
-    reserve_retire_df.loc[last_year_reserve + 1:last_year_reserve + n, 'Post Mil Retirement Pay'] = 123000
+active_retire_df['Post Mil Retirement Pay'] = 0
+reserve_retire_df['Post Mil Retirement Pay'] = 0
 
 # Define the columns to be included in the visualization
 selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
 
 # Define the layout of the app
 app.layout = html.Div([
-    html.H1("Military Pay Data Visualization"),
-    
-    # Create two Graph components with IDs
+    html.H1("Active and Reserve Retirement Lifetime Pay Comparison"),
+
+    # Active retirement graph options
+    html.Div([
+    html.Label('Active retirement graph post-military retirement pay options: '),
+
+    html.Div([
+        html.Label('Start year: ', style={'display': 'inline-block', 'width': '75px'}),
+        dcc.Input(id='active_retire_start_year_input', type='number', value=active_retire_default_start_year),
+    ]),
+
+    html.Div([
+        html.Label('Amount: ', style={'display': 'inline-block', 'width': '75px'}),
+        dcc.Input(id='active_retire_amount_input', type='number', value=active_retire_default_amount),
+    ]),
+
+    html.Div([
+        html.Label('End year: ', style={'display': 'inline-block', 'width': '75px'}),
+        dcc.Input(id='active_retire_end_year_input', type='number', value=active_retire_default_end_year),
+    ]),
+    ], style={'margin-bottom': '20px', 'border': '1px solid #ddd', 'padding': '10px'}),
+
+    # Active retirement graph
     dcc.Graph(id='active_retire_graph'),
+
+    # Reserve retirement graph options
+    html.Div([
+    html.Label('Reserve retirement graph post-military retirement pay options: '),
+
+    html.Div([
+        html.Label('Start year: ', style={'display': 'inline-block', 'width': '75px'}),
+        dcc.Input(id='reserve_retire_start_year_input', type='number', value=reserve_retire_default_start_year),
+    ]),
+
+    html.Div([
+        html.Label('Amount: ', style={'display': 'inline-block', 'width': '75px'}),
+        dcc.Input(id='reserve_retire_amount_input', type='number', value=reserve_retire_default_amount),
+    ]),
+
+    html.Div([
+        html.Label('End year: ', style={'display': 'inline-block', 'width': '75px'}),
+        dcc.Input(id='reserve_retire_end_year_input', type='number', value=reserve_retire_default_end_year),
+    ]),
+    ], style={'margin-bottom': '20px', 'border': '1px solid #ddd', 'padding': '10px'}),
+
+    # Reserve retirement graph
     dcc.Graph(id='reserve_retire_graph'),
-    
-    # Dummy input elements that don't affect the layout
-    dcc.Input(id='dummy_input_1', style={'display': 'none'}, value=''),
-    dcc.Input(id='dummy_input_2', style={'display': 'none'}, value='')
 ])
 
 # Create callback functions to update the graphs for ActiveRetire and ReserveRetire sheets
 @app.callback(
     Output('active_retire_graph', 'figure'),
-    [Input('dummy_input_1', 'value')]
+    [Input('active_retire_start_year_input', 'value'),
+     Input('active_retire_amount_input', 'value'),
+     Input('active_retire_end_year_input', 'value')]
 )
-def update_active_retire_graph(value):
-    data = []
+def update_active_retire_graph(start_year, amount, end_year):
+    end_year = min(end_year, active_retire_default_end_year)  # Ensure end_year is within bounds
+    active_retire_df.loc[start_year:end_year, 'Post Mil Retirement Pay'] = amount
 
+    data = []
     for column in selected_columns:
         trace = go.Bar(
-            x=years,
+            x=active_retire_df['Calendar Year'],
             y=active_retire_df[column],
             name=column
         )
@@ -63,23 +100,28 @@ def update_active_retire_graph(value):
 
     layout = go.Layout(
         barmode='stack',
-        title='Active Retirement Graph'
+        title='Active Retirement Graph',
+        yaxis=dict(range=[0,250000])
     )
 
     fig = go.Figure(data=data, layout=layout)
-    
+
     return fig
 
 @app.callback(
     Output('reserve_retire_graph', 'figure'),
-    [Input('dummy_input_2', 'value')]
+    [Input('reserve_retire_start_year_input', 'value'),
+     Input('reserve_retire_amount_input', 'value'),
+     Input('reserve_retire_end_year_input', 'value')]
 )
-def update_reserve_retire_graph(value):
-    data = []
+def update_reserve_retire_graph(start_year, amount, end_year):
+    end_year = min(end_year, reserve_retire_default_end_year)  # Ensure end_year is within bounds
+    reserve_retire_df.loc[start_year:end_year, 'Post Mil Retirement Pay'] = amount
 
+    data = []
     for column in selected_columns:
         trace = go.Bar(
-            x=years,
+            x=reserve_retire_df['Calendar Year'],
             y=reserve_retire_df[column],
             name=column
         )
@@ -87,11 +129,12 @@ def update_reserve_retire_graph(value):
 
     layout = go.Layout(
         barmode='stack',
-        title='Reserve Retirement Graph'
+        title='Reserve Retirement Graph',
+        yaxis=dict(range=[0,250000])
     )
 
     fig = go.Figure(data=data, layout=layout)
-    
+
     return fig
 
 # Run the app if this script is the main entry point
