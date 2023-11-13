@@ -22,10 +22,11 @@ reserve_retire_default_end_year = reserve_retire_df['Gov\'t TSP Payout'].first_v
 
 # Initialize a new column 'Post Mil Retirement Pay' with zeros
 active_retire_df['Post Mil Retirement Pay'] = 0
-reserve_retire_df['Post Mil Retirement Pay'] = 0
+reserve_retire_df['Post Active Duty Pay'] = 0
 
 # Define the columns to be included in the visualization
-selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
+active_retire_selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
+reserve_retire_selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Active Duty Pay']
 
 # Define the layout of the app
 app.layout = html.Div([
@@ -49,6 +50,9 @@ app.layout = html.Div([
         html.Label('End year: ', style={'display': 'inline-block', 'width': '75px'}),
         dcc.Input(id='active_retire_end_year_input', type='number', value=active_retire_default_end_year),
     ]),
+
+    html.Div(id='active_retire_lifetime_earnings'),
+
     ], style={'margin-bottom': '20px', 'border': '1px solid #ddd', 'padding': '10px'}),
 
     # Active retirement graph
@@ -56,7 +60,7 @@ app.layout = html.Div([
 
     # Reserve retirement graph options
     html.Div([
-    html.Label('Reserve retirement graph post-military retirement pay options: '),
+    html.Label('Reserve retirement graph post-active duty pay options: '),
 
     html.Div([
         html.Label('Start year: ', style={'display': 'inline-block', 'width': '75px'}),
@@ -72,6 +76,9 @@ app.layout = html.Div([
         html.Label('End year: ', style={'display': 'inline-block', 'width': '75px'}),
         dcc.Input(id='reserve_retire_end_year_input', type='number', value=reserve_retire_default_end_year),
     ]),
+
+    html.Div(id='reserve_retire_lifetime_earnings'),
+
     ], style={'margin-bottom': '20px', 'border': '1px solid #ddd', 'padding': '10px'}),
 
     # Reserve retirement graph
@@ -80,7 +87,8 @@ app.layout = html.Div([
 
 # Create callback functions to update the graphs for ActiveRetire and ReserveRetire sheets
 @app.callback(
-    Output('active_retire_graph', 'figure'),
+    [Output('active_retire_graph', 'figure'),
+    Output('active_retire_lifetime_earnings', 'children')],
     [Input('active_retire_start_year_input', 'value'),
      Input('active_retire_amount_input', 'value'),
      Input('active_retire_end_year_input', 'value')]
@@ -90,13 +98,17 @@ def update_active_retire_graph(start_year, amount, end_year):
     active_retire_df.loc[start_year:end_year, 'Post Mil Retirement Pay'] = amount
 
     data = []
-    for column in selected_columns:
+    lifetime_earnings = 0
+
+    for column in active_retire_selected_columns:
         trace = go.Bar(
             x=active_retire_df['Calendar Year'],
             y=active_retire_df[column],
             name=column
         )
         data.append(trace)
+
+        lifetime_earnings += active_retire_df[column].sum()
 
     layout = go.Layout(
         barmode='stack',
@@ -106,26 +118,40 @@ def update_active_retire_graph(start_year, amount, end_year):
 
     fig = go.Figure(data=data, layout=layout)
 
-    return fig
+    lifetime_earnings = "${:,.2f}".format(lifetime_earnings)
+
+    lifetime_earnings_div = html.Div(
+        children=[
+            html.Div("Lifetime Earnings", style={'font-weight': 'bold'}),
+            html.Div(lifetime_earnings, style={'border': '2px solid black', 'padding': '10px'})
+        ]
+    )
+
+    return fig, lifetime_earnings_div
 
 @app.callback(
-    Output('reserve_retire_graph', 'figure'),
+    [Output('reserve_retire_graph', 'figure'),
+     Output('reserve_retire_lifetime_earnings', 'children')],
     [Input('reserve_retire_start_year_input', 'value'),
      Input('reserve_retire_amount_input', 'value'),
      Input('reserve_retire_end_year_input', 'value')]
 )
 def update_reserve_retire_graph(start_year, amount, end_year):
     end_year = min(end_year, reserve_retire_default_end_year)  # Ensure end_year is within bounds
-    reserve_retire_df.loc[start_year:end_year, 'Post Mil Retirement Pay'] = amount
+    reserve_retire_df.loc[start_year:end_year, 'Post Active Duty Pay'] = amount
 
     data = []
-    for column in selected_columns:
+    lifetime_earnings = 0
+
+    for column in reserve_retire_selected_columns:
         trace = go.Bar(
             x=reserve_retire_df['Calendar Year'],
             y=reserve_retire_df[column],
             name=column
         )
         data.append(trace)
+
+        lifetime_earnings += reserve_retire_df[column].sum()
 
     layout = go.Layout(
         barmode='stack',
@@ -135,7 +161,16 @@ def update_reserve_retire_graph(start_year, amount, end_year):
 
     fig = go.Figure(data=data, layout=layout)
 
-    return fig
+    lifetime_earnings = "${:,.2f}".format(lifetime_earnings)
+
+    lifetime_earnings_div = html.Div(
+        children=[
+            html.Div("Lifetime Earnings", style={'font-weight': 'bold'}),
+            html.Div(lifetime_earnings, style={'border': '2px solid black', 'padding': '10px'})
+        ]
+    )
+
+    return fig, lifetime_earnings_div
 
 # Run the app if this script is the main entry point
 if __name__ == '__main__':
