@@ -30,7 +30,7 @@ reserve_retire_selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pens
 
 # Define the layout of the app
 app.layout = html.Div([
-    html.H1("Active and Reserve Retirement Lifetime Pay Comparison"),
+    html.H1("Active and Reserve Retirement Lifetime Earnings Comparison"),
 
     # Active retirement graph options
     html.Div([
