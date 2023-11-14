@@ -3,8 +3,13 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, html, dcc, Input, Output
 
+# Set the style for the page
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
 # Create a Dash application
-app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=external_stylesheets)\
+
+app.title = 'Lifetime Earnings Comparison'
 
 # Read data from an Excel file for both sheets
 active_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ActiveRetire')
@@ -19,10 +24,6 @@ active_retire_default_end_year = active_retire_df['Gov\'t TSP Payout'].first_val
 reserve_retire_default_start_year = reserve_retire_df['Military Pay'].diff().idxmin() if reserve_retire_df['Military Pay'].diff().idxmin() is not None else reserve_retire_df['Military Pay'].last_valid_index() + 1
 reserve_retire_default_amount = reserve_retire_df['Military Pay'].max() if reserve_retire_df['Military Pay'].max() is not None else 80000
 reserve_retire_default_end_year = reserve_retire_df['Gov\'t TSP Payout'].first_valid_index() - 1
-
-# Initialize a new column 'Post Mil Retirement Pay' with zeros
-active_retire_df['Post Mil Retirement Pay'] = 0
-reserve_retire_df['Post Active Duty Pay'] = 0
 
 # Define the columns to be included in the visualization
 active_retire_selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
@@ -94,7 +95,8 @@ app.layout = html.Div([
      Input('active_retire_end_year_input', 'value')]
 )
 def update_active_retire_graph(start_year, amount, end_year):
-    end_year = min(end_year, active_retire_default_end_year)  # Ensure end_year is within bounds
+    end_year = min(end_year, active_retire_df['Calendar Year'].max())
+    active_retire_df['Post Mil Retirement Pay'] = 0
     active_retire_df.loc[start_year:end_year, 'Post Mil Retirement Pay'] = amount
 
     data = []
@@ -137,7 +139,8 @@ def update_active_retire_graph(start_year, amount, end_year):
      Input('reserve_retire_end_year_input', 'value')]
 )
 def update_reserve_retire_graph(start_year, amount, end_year):
-    end_year = min(end_year, reserve_retire_default_end_year)  # Ensure end_year is within bounds
+    end_year = min(end_year, reserve_retire_df['Calendar Year'].max())  
+    reserve_retire_df['Post Active Duty Pay'] = 0
     reserve_retire_df.loc[start_year:end_year, 'Post Active Duty Pay'] = amount
 
     data = []
