@@ -2,6 +2,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, html, dcc, Input, Output
+from dash.exceptions import PreventUpdate
 
 # Set the style for the page
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -95,7 +96,18 @@ app.layout = html.Div([
      Input('active_retire_end_year_input', 'value')]
 )
 def update_active_retire_graph(start_year, amount, end_year):
-    end_year = min(end_year, active_retire_df['Calendar Year'].max())
+    try:
+        start_year = int(start_year)
+        start_year = max(0, min(start_year, active_retire_df['Calendar Year'].max()))
+    except (ValueError, TypeError):
+        raise PreventUpdate
+    
+    try:
+        end_year = int(end_year)
+        end_year = max(0, min(end_year, active_retire_df['Calendar Year'].max()))
+    except (ValueError, TypeError):
+        raise PreventUpdate
+    
     active_retire_df['Post Mil Retirement Pay'] = 0
     active_retire_df.loc[start_year:end_year, 'Post Mil Retirement Pay'] = amount
 
@@ -139,7 +151,18 @@ def update_active_retire_graph(start_year, amount, end_year):
      Input('reserve_retire_end_year_input', 'value')]
 )
 def update_reserve_retire_graph(start_year, amount, end_year):
-    end_year = min(end_year, reserve_retire_df['Calendar Year'].max())  
+    try:
+        start_year = int(start_year)
+        start_year = max(0, min(start_year, reserve_retire_df['Calendar Year'].max()))
+    except (ValueError, TypeError):
+        raise PreventUpdate
+    
+    try:
+        end_year = int(end_year)
+        end_year = max(0, min(end_year, reserve_retire_df['Calendar Year'].max()))
+    except (ValueError, TypeError):
+        raise PreventUpdate
+    
     reserve_retire_df['Post Active Duty Pay'] = 0
     reserve_retire_df.loc[start_year:end_year, 'Post Active Duty Pay'] = amount
 
