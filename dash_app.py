@@ -17,12 +17,12 @@ active_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ActiveRetire')
 reserve_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ReserveRetire')
 
 # Active retirement graph initial values
-active_retire_default_start_year = active_retire_df['Military Pay'].diff().idxmin() if active_retire_df['Military Pay'].diff().idxmin() is not None else active_retire_df['Military Pay'].last_valid_index() + 1
+active_retire_default_start_year = active_retire_df['Military Pay'].diff().idxmin() + 1 if active_retire_df['Military Pay'].diff().idxmin() is not None else active_retire_df['Military Pay'].last_valid_index() + 1
 active_retire_default_amount = active_retire_df['Military Pay'].max() if active_retire_df['Military Pay'].max() is not None else 80000
 active_retire_default_end_year = active_retire_df['Gov\'t TSP Payout'].first_valid_index() - 1
 
 # Reserve retirement graph initial values
-reserve_retire_default_start_year = reserve_retire_df['Military Pay'].diff().idxmin() if reserve_retire_df['Military Pay'].diff().idxmin() is not None else reserve_retire_df['Military Pay'].last_valid_index() + 1
+reserve_retire_default_start_year = reserve_retire_df['Military Pay'].diff().idxmin() + 1 if reserve_retire_df['Military Pay'].diff().idxmin() is not None else reserve_retire_df['Military Pay'].last_valid_index() + 1
 reserve_retire_default_amount = reserve_retire_df['Military Pay'].max() if reserve_retire_df['Military Pay'].max() is not None else 80000
 reserve_retire_default_end_year = reserve_retire_df['Gov\'t TSP Payout'].first_valid_index() - 1
 
