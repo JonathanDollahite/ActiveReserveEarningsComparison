@@ -1,5 +1,4 @@
+dash==2.10.0
 pandas
-plotly.graph_objects
-dash
-dash.exceptions
+plotly
 gunicorn
