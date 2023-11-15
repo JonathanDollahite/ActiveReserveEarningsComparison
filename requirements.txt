@@ -1,5 +1,5 @@
 pandas
-plotly
+plotly.graph_objects
 dash
 dash.exceptions
 gunicorn
