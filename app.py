@@ -10,7 +10,9 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # Create a Dash application
 app = Dash(__name__, external_stylesheets=external_stylesheets)\
 
-app.title = 'Lifetime Earnings Comparison'
+server = app.server
+
+app.title = 'Active vs Reserve Lifetime Earnings Comparison'
 
 # Read data from an Excel file for both sheets
 active_retire_df = pd.read_excel('mil_pay.xlsx', sheet_name='ActiveRetire')
@@ -27,9 +29,10 @@ reserve_retire_default_salary= reserve_retire_df['Military Pay'].max() if reserv
 reserve_retire_default_end_year = reserve_retire_df['Gov\'t TSP Payout'].first_valid_index() - 1
 
 # Define the columns to be included in the visualization
-active_retire_selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Mil Retirement Pay']
-reserve_retire_selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Active Duty Pay']
-
+selected_columns = ['Military Pay', 'Bonus & Payments', 'BRS Pension', 'Service Member TSP Payout', "Gov't TSP Payout", 'Post Active Duty Pay']
+active_retire_df['Post Active Duty Pay'] = 0
+reserve_retire_df['Post Active Duty Pay'] = 0
+    
 # Define the layout of the app
 app.layout = html.Div([
     html.H1("Active and Reserve Retirement Lifetime Earnings Comparison"),
@@ -132,14 +135,20 @@ def update_graphs(
 ):
     # Update active retirement graph
     active_fig, active_earnings_div = update_retire_graph(
-        active_retire_df, active_retire_selected_columns,
+        active_retire_df, selected_columns,
         active_start_year, active_salary, active_yearly_raise, active_end_year
     )
 
     # Update reserve retirement graph
     reserve_fig, reserve_earnings_div = update_retire_graph(
-        reserve_retire_df, reserve_retire_selected_columns,
+        reserve_retire_df, selected_columns,
         reserve_start_year, reserve_salary, reserve_yearly_raise, reserve_end_year
+    )
+
+    # Update active retirement graph
+    active_fig, active_earnings_div = update_retire_graph(
+        active_retire_df, selected_columns,
+        active_start_year, active_salary, active_yearly_raise, active_end_year
     )
 
     return active_fig, active_earnings_div, reserve_fig, reserve_earnings_div
@@ -167,6 +176,8 @@ def update_retire_graph(df, selected_columns, start_year, salary, yearly_raise, 
         yearly_raise = float(yearly_raise) / 100.0
     except (ValueError, TypeError):
         raise PreventUpdate
+
+    df[selected_columns[-1]] = 0
     
     for year in range(start_year, end_year + 1):
         df.loc[year, selected_columns[-1]] = salary
@@ -186,8 +197,9 @@ def update_retire_graph(df, selected_columns, start_year, salary, yearly_raise, 
         lifetime_earnings += df[column].sum()
 
     # Calculate max_value for both graphs
-    max_value = df[selected_columns].sum(axis=1).max()
-
+    max_value = max(active_retire_df[selected_columns].sum(axis=1).max(),
+                    reserve_retire_df[selected_columns].sum(axis=1).max())
+    
     # Determine max_yaxis_value based on the specified conditions
     max_yaxis_value = max(250000, int((max_value + 49999) / 50000) * 50000)
 

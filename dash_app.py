@@ -107,6 +107,8 @@ app.layout = html.Div([
      Input('active_retire_end_year_input', 'value')]
 )
 def update_active_retire_graph(start_year, salary, yearly_raise, end_year):
+    active_retire_df['Post Mil Retirement Pay'] = 0
+
     try:
         start_year = int(start_year)
         start_year = max(0, min(start_year, active_retire_df['Calendar Year'].max()))
