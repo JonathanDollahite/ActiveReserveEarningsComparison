@@ -1,4 +1,5 @@
 # ActiveReserveEarningsComparison
+https://active-vs-reserve-lifetime-earnings.onrender.com
 
 This code sets up a Dash web application to compare the lifetime pay of active and reserve military personnel after retirement. It uses the Plotly library for graph visualization and the Dash framework for creating interactive web applications. The data is read from an Excel file with two sheets: 'ActiveRetire' and 'ReserveRetire'. The initial values for the graphs are set based on certain calculations from the data.
 
