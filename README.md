@@ -10,7 +10,7 @@ Clone the repository, navigate into the folder, and ensure you have the necessar
 
 ```bash
 git clone https://github.com/JonathanDollahite/ActiveReserveEarningsComparison.git;\
-cd DataScienceSalaryPredictor;\
+cd ActiveReserveEarningsComparison;\
 pip install -r requirements.txt
 ```
 
