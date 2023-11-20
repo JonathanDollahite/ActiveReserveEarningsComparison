@@ -6,16 +6,18 @@ This Dash web application compares the lifetime earnings of active-duty military
 You can visit the functional app at the following link: https://active-vs-reserve-lifetime-earnings.onrender.com/
 
 ## Getting Started
-To run this application, ensure you have the necessary libraries installed. You can install them using the following command:
+Clone the repository, navigate into the folder, and ensure you have the necessary libraries installed. Use the following command to do all three at once (assuming HTTPS):
 
 ```bash
-pip install pandas plotly dash
+git clone https://github.com/JonathanDollahite/ActiveReserveEarningsComparison.git;\
+cd DataScienceSalaryPredictor;\
+pip install -r requirements.txt
 ```
 
 After installing the dependencies, run the app with the following command:
 
 ```bash
-python your_app_name.py
+python app.py
 ```
 
 Visit http://127.0.0.1:8050/ in your web browser to access the app.
