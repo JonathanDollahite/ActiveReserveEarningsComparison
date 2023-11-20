@@ -3,6 +3,8 @@
 ## Overview
 This Dash web application compares the lifetime earnings of active-duty military personnel and reservists after retirement. It visualizes key financial elements over time, allowing users to explore different scenarios.
 
+You can visit the functional app at the following link: https://active-vs-reserve-lifetime-earnings.onrender.com/
+
 ## Getting Started
 To run this application, ensure you have the necessary libraries installed. You can install them using the following command:
 
